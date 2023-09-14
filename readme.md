@@ -86,6 +86,7 @@ $$\dot{C_{ep_i}} = c_{T_{exc}}  q_i^{(T)}  (C_{ep_i} - C_{ep_{min}})$$
 
 $$\dot w_{ij} = -c_{T_{SC}} (q_i^{(T)} + q_j^{(T)}) (w_{ij} - w_{ij_{min}} )$$
 
+Where: 
 $$w_{ij_{min}} = w_{ij_0}  (1 - T_{SC_{max}})$$
 
 
