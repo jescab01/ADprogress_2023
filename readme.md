@@ -53,7 +53,7 @@ $$\dot {A\beta t_i} = -\rho \sum_{j=1}^{N}L_{ij} \cdot A\beta t_j - clear_{A\bet
 
 $$\dot {TAU_i} = -\rho \sum_{j=1}^{N}L_{ij} \cdot TAU_j + prod_{T} - clear_{T} \cdot TAU_i - trans_{T} \cdot TAU_i \cdot TAUt_i - syn_{T} \cdot A\beta t \cdot TAU \cdot TAUt $$
 
-$$\dot {TAUt_{i}} = -\rho \sum_{j=1}^{N}L_{ij} \cdot TAUt_{j} \cdot q_i^{ha} - clear_{\tau_{t}} \cdot TAU_{t_i} + trans_{T} \cdot TAU_i \cdot TAUt_{i} + syn_{T} \cdot A\beta t \cdot TAU \cdot TAUt$$
+$$\dot {TAUt_{i}} = -\rho \sum_{j=1}^{N}L_{ij} \cdot TAUt_{j} \cdot (q_i^{ha}+1) - clear_{\tau_{t}} \cdot TAU_{t_i} + trans_{T} \cdot TAU_i \cdot TAUt_{i} + syn_{T} \cdot A\beta t \cdot TAU \cdot TAUt$$
 
 Where:
 $$L_{ij}=-w_{ij}(t) + \delta_{ij} \sum_{j=1}^{N}{w_{ij}(t)}$$
