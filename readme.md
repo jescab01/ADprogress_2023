@@ -1,4 +1,4 @@
-Code use in the paper Cabrera-Álvarez et al. (2023) A multiscale closed-loop neurotoxicity model of Alzheimer’s disease progression explains functional connectivity alterations
+Code use in the paper [Cabrera-Álvarez et al. (2023)](https://doi.org/10.1101/2023.09.24.559180) A multiscale closed-loop neurotoxicity model of Alzheimer’s disease progression explains functional connectivity alterations
 
 
 
