@@ -84,7 +84,7 @@ Where:
 $$w_{ij_{min}} = w_{ij_0}  (1 - T_{SC_{max}})$$
 
 
-Finally, we included the effect of hyperactivity on the enhanced production of $A\beta$ and the biased prion-like propagation of TAUt to hyperactive regions directly into proteinopathy equations. Note that the level of cellular activity was evaluated through the average firing rate of the pyramidal cells in a region, using the sigmoidal transformation of the inputs to pyramidal cells described for the JR model.
+Finally, we included the effect of hyperactivity on the enhanced production of $A\beta$ and the biased prion-like propagation of TAUt to hyperactive regions directly into proteinopathy equations. Note that the level of cellular activity was evaluated through the average firing rate of the pyramidal cells in a region, using the sigmoidal transformation of the inputs to pyramidal cells (i.e., $S[y_{1_i}(t) - y_{2_i}(t)]$ described for the JR model.
 
 $$\dot q_i^{(ha)} = ha_{damrate} \cdot (\Delta ha_i - 1) \cdot (1 - |q_i^{(ha)}|)$$
 
