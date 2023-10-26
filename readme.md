@@ -81,7 +81,7 @@ $$\dot{H_{e_i}} = c_{A\beta_{exc}} q_i^{(A\beta)} (H_{e_{max}} - H_{e_i})$$
 
 $$\dot{C_{ip_i}} = -c_{A\beta_{inh}} q_i^{(A\beta)}(C_{ip_i} - C_{ip_{min}}) - c_{T_{inh}} q_i^{(T)} (C_{ip_i} - C_{ip_{min}})$$
 
-$$\dot{C_{ep_i}} = c_{T_{exc}}  q_i^{(T)}  (C_{ep_i} - C_{ep_{min}})$$
+$$\dot{C_{ep_i}} = -c_{T_{exc}}  q_i^{(T)}  (C_{ep_i} - C_{ep_{min}})$$
 
 
 $$\dot w_{ij} = -c_{T_{SC}} (q_i^{(T)} + q_j^{(T)}) (w_{ij} - w_{ij_{min}} )$$
