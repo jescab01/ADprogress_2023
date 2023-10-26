@@ -202,7 +202,7 @@ class CircularADpgModel_vCC:
         for t in np.arange(dt, time, dt):
 
             ## HyperActivity damage (attracting TAUt and generating more AB)
-            dActivity = np.average(ratePyr, axis=1) - baseline_activity  # spectra[1] / baseline_power
+            dActivity = np.average(ratePyr, axis=1) / baseline_activity  
 
             deriv = self.dfun(state_variables, self.Laplacian(weights), dActivity)
 
@@ -285,7 +285,7 @@ class CircularADpgModel_vCC:
         dTAUdam = self.TAU_damrate["value"] * TAUt * (1 - TAUdam)
 
         ## Hyperactivity impact
-        dHAdam = self.HA_damrate["value"] * dHA  # * (self.maxHAdam["value"] - HAdam)
+        dHAdam = self.HA_damrate["value"] * (dHA - 1)  * (1 - np.abs(HAdam))
 
         ## (He) PSP amplitude transfer - Impact on Glutamate reuptake
         dHe = self.cABexc["value"] * ABdam * (self.init_He["range"][1] - He_)
