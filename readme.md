@@ -47,13 +47,13 @@ $$input(t) = p_i + \eta_i(t) + g\sum_{j=1}^{n} w_{ji} \cdot S[y_{1_j}(t - d_{ji}
 ## Proteinopathy
 Proteinopathy dynamics are described by the heterodimer model, one of the most common hypotheses that describe the prion-like spreading of toxic proteins. This hypothesis suggests that a healthy (properly folded) protein misfolds when it interacts with a toxic version of itself (misfolded; the prion/seed) following the latter's structure as a template [(Garzón et al. 2021)](10.1016/j.jtbi.2021.110797). Therefore, this model includes healthy and toxic versions of amyloid-beta ($A\beta$ / $A\beta_t$) and tau ($TAU$ / $TAU_t$) that are produced, cleared, transformed (from healthy to toxic), and propagated in the SC with N nodes. 
 
-$$\dot {A\beta_i} = -\rho \sum_{j=1}^{N}L_{ij} \cdot A\beta_j +  prod_{A\beta} \cdot (q_i^{ha}+1) - clear_{A\beta} \cdot A\beta_i - trans_{A\beta} \cdot A\beta_i \cdot A\beta t_i$$
+$$\dot {A\beta_i} = -\rho \sum_{j=1}^{N}L_{ij} \cdot A\beta_j +  prod_{A\beta} \cdot (q_i^{(ha)}+1) - clear_{A\beta} \cdot A\beta_i - trans_{A\beta} \cdot A\beta_i \cdot A\beta t_i$$
 
 $$\dot {A\beta t_i} = -\rho \sum_{j=1}^{N}L_{ij} \cdot A\beta t_j - clear_{A\beta t} \cdot A\beta t_i + trans_{A\beta} \cdot A\beta_i \cdot A\beta t_i$$
 
 $$\dot {TAU_i} = -\rho \sum_{j=1}^{N}L_{ij} \cdot TAU_j + prod_{T} - clear_{T} \cdot TAU_i - trans_{T} \cdot TAU_i \cdot TAUt_i - syn_{T} \cdot A\beta t \cdot TAU \cdot TAUt $$
 
-$$\dot {TAUt_{i}} = -\rho \sum_{j=1}^{N}L_{ij} \cdot TAUt_{j} \cdot (q_i^{ha}+1) - clear_{\tau_{t}} \cdot TAU_{t_i} + trans_{T} \cdot TAU_i \cdot TAUt_{i} + syn_{T} \cdot A\beta t \cdot TAU \cdot TAUt$$
+$$\dot {TAUt_{i}} = -\rho \sum_{j=1}^{N}L_{ij} \cdot TAUt_{j} \cdot (q_i^{(ha)}+1) - clear_{\tau_{t}} \cdot TAU_{t_i} + trans_{T} \cdot TAU_i \cdot TAUt_{i} + syn_{T} \cdot A\beta t \cdot TAU \cdot TAUt$$
 
 Where:
 $$L_{ij}=-w_{ij}(t) + \delta_{ij} \sum_{j=1}^{N}{w_{ij}(t)}$$
@@ -63,19 +63,13 @@ $$L_{ij}=-w_{ij}(t) + \delta_{ij} \sum_{j=1}^{N}{w_{ij}(t)}$$
 
 
 ## Interactions
-The effect of toxic proteins over neural activity and viceversa is mediated by three transfer functions (damage variables). These damage variables are used to update the values of the JR parameters and to influence the dynamics of proteinopathy (note that hyperactivity damage - $q_i^{(ha)}$ was directly introduced in the proteinopathy equations). 
+The effect of toxic proteins on neural activity and vice-versa is mediated by three transfer functions (damage variables). These damage variables are used to update the values of the JR parameters. 
  
- $$\dot q_i^{(A\beta)} = A\beta t_{damrate} \cdot A\beta t_i (1-q_i^{(A\beta)})$$
+$$\dot q_i^{(A\beta)} = A\beta t_{damrate} \cdot A\beta t_i (1-q_i^{(A\beta)})$$
 
 $$\dot q_i^{(T)} = TAUt_{damrate} \cdot TAUt_i (1-q_i^{(T)})$$
 
-$$\dot q_i^{(ha)} = ha_{damrate} \cdot \Delta ha_i$$
-
-Where
-$$\Delta ha_i = ha_i(t) - ha_{i_{0}}$$
-
-
- The following interactions were considered: $A\beta$ disrupts the reuptake of glutamate rising excitation through the amplitude of the excitatory PSP ($H_e$); $A\beta$ reduced the number of inhibitory GABAergic synapses modeled through a reduction in $C_{ip}$ the average number of synapses between inhibitory neurons to pyramidal cells; hp-tau reduces the number of dendritic spines in pyramidal cells modeled through a reduction in $C_{ip}$, $C_{ep}$, and $w_{ij}$ (interregional weights).
+The following interactions were considered: $A\beta$ disrupts the reuptake of glutamate rising excitation through the amplitude of the excitatory PSP ($H_e$); $A\beta$ reduced the number of inhibitory GABAergic synapses modeled through a reduction in $C_{ip}$ the average number of synapses between inhibitory neurons to pyramidal cells; hp-tau reduces the number of dendritic spines in pyramidal cells modeled through a reduction in $C_{ip}$, $C_{ep}$, and $w_{ij}$ (interregional weights).
 
 $$\dot{H_{e_i}} = c_{A\beta_{exc}} q_i^{(A\beta)} (H_{e_{max}} - H_{e_i})$$
 
@@ -90,4 +84,10 @@ Where:
 $$w_{ij_{min}} = w_{ij_0}  (1 - T_{SC_{max}})$$
 
 
-Finally, we included the effect of hyperactivity on the enhanced production of $A\beta$ and on the biased prion-like propagation of TAUt to hyperactive regions directly into proteinopathy equations.
+Finally, we included the effect of hyperactivity on the enhanced production of $A\beta$ and the biased prion-like propagation of TAUt to hyperactive regions directly into proteinopathy equations. Note that the level of cellular activity was evaluated through the average firing rate of the pyramidal cells in a region, using the sigmoidal transformation of the inputs to pyramidal cells described for the JR model.
+
+$$\dot q_i^{(ha)} = ha_{damrate} \cdot (\Delta ha_i - 1) \cdot (1 - |q_i^{(ha)}|)$$
+
+Where
+$$\Delta ha_i = ha_i(t) / ha_{i_{0}}$$
+
