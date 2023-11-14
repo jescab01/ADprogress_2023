@@ -14,8 +14,8 @@ Figures included in the paper were built using the code in folders. R1, R3, and 
 |------|---------|
 | R1 | Figure 2 |
 | R2 | Figure 3, 4 |
-| R3 | Figure 5, 5-1 |
-| R4 | Figure 6, 7 |
+| R3 | Figure 5, 6 |
+| R4 | Figure 7, 8 |
 
 
 
