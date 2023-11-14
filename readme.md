@@ -12,9 +12,9 @@ Figures included in the paper were built using the code in folders. R1, R3, and 
 
 |Folder| Figures |
 |------|---------|
-| R1 | Figure 1 |
-| R2 | Figure 2, 3 |
-| R3 | Figure 4, 4-1 |
+| R1 | Figure 2 |
+| R2 | Figure 3, 4 |
+| R3 | Figure 5, 5-1 |
 | R4 | Figure 6, 7 |
 
 
@@ -26,22 +26,22 @@ SC derived from 20 healthy controls served as the skeleton for the BNMs implemen
 ## Jansen-Rit Model
 Regional signals were simulated using Jansen-Rit (JR) NMMs [(Jansen & Rit, 1995)](https://doi.org/10.1007/BF00199471), a biologically inspired model of a cortical column capable of reproducing alpha oscillations through a system of second-order coupled~differential equations (see Table 1 for a description of parameters):
 
-$$\dot y_{0_i}(t) = y_{3_i}(t)$$
+$$\dot y_{0_i} = y_{3_i}$$
 
-$$\dot y_{1_i}(t) = y_{4_i}(t)$$
+$$\dot y_{1_i} = y_{4_i}$$
 
-$$\dot y_{2_i}(t) = y_{5_i}(t)$$
+$$\dot y_{2_i} = y_{5_i}$$
 
-$$\dot y_{3_i}(t) = \frac{H_e}{\tau_e} \cdot S[y_{1_i}(t) - y_{2_i}(t)] - \frac{2}{ \tau_e} \cdot y_{3_i}(t) - \frac{1}{\tau_e^2} \cdot y_{0_i}(t)$$
+$$\dot y_{3_i} = \frac{H_e}{\tau_e} \ S[y_{1_i} - y_{2_i}] - \frac{2}{ \tau_e}  y_{3_i} - \frac{1}{\tau_e^2}  y_{0_i}$$
 
-$$\dot y_{4_i}(t) = \frac{H_e}{\tau_e} \cdot (input(t) + C_{ep} \cdot S[C_{pe} \cdot y_{0_i}(t)]) - \frac{2}{\tau_e} \cdot y_{4_i}(t) - \frac{1}{\tau_e^2} \cdot y_{1_i}(t)$$
+$$\dot y_{4_i} = \frac{H_e}{\tau_e} \ \{ I_i(t) + C_{ep} S[C_{pe} \ y_{0_i}] \} - \frac{2}{\tau_e}  y_{4_i} - \frac{1}{\tau_e^2}  y_{1_i}$$
 
-$$\dot y_{5_i}(t) = \frac{H_i}{\tau_i} \cdot (C_{ip} \cdot S[C_{pi} \cdot y_{0_i}(t)]) - \frac{2}{\tau_i} \cdot y_{5_i}(t) - \frac{1}{\tau_i^2} \cdot y_{2_i}(t)$$
+$$\dot y_{5_i} = \frac{H_i}{\tau_i} \ C_{ip} \ S[C_{pi} y_{0_i}] - \frac{2}{\tau_i}  y_{5_i} - \frac{1}{\tau_i^2}  y_{2_i}$$
 
 Where:
 $$S\left[v\right]\ =\ \frac{2 \cdot e_{0}}{1 + e^{r(v_0-v)}}$$
 
-$$input(t) = p_i + \eta_i(t) + g\sum_{j=1}^{n} w_{ji} \cdot S[y_{1_j}(t - d_{ji}) - y_{2_j}(t - d_{ji})]$$
+$$I_i(t) = \eta_i(t) + g\sum_{j=1}^{n} w_{ji} \ S[y_{1_j}(t - d_{ji}) - y_{2_j}(t - d_{ji})]$$
 
 
 ## Proteinopathy
