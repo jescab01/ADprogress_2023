@@ -8,6 +8,8 @@ import pickle
 from tvb.simulator.lab import connectivity
 from ADpg_functions import circApproach, CircularADpgModel_vCC, paramtraj_in3D, correlations_v2, braidPlot
 
+# from ADpg_functions import simulate_v2, correlations_v2, animateFC, surrogatesFC, animate_propagation_v4, CircularADpgModel_vCC, braidPlot
+# from ADpg_CalibrationFunctions import TransferOne, TransferTwo, propagationtrajectory_on4D
 
 ## Folder structure - Local
 if "LCCN_Local" in os.getcwd():
@@ -25,9 +27,9 @@ else:
 #     1.  PREPARE EMPIRICAL DATA      #########################
 #   STRUCTURAL CONNECTIVITY   #########
 #  Define structure through which the proteins will spread;
-#  Not necessarily the same than the one used to simulate activity.
+#  Not necessarily the same as the one used to simulate activity.
 subj, g, s, sigma = "HC-fam", 25, 20, 0.022
-conn = connectivity.Connectivity.from_file(data_folder + "SC_matrices_old21.03.22/" + subj + "_aparc_aseg-mni_09c.zip")
+conn = connectivity.Connectivity.from_file(data_folder + "SC_matrices/" + subj + "_aparc_aseg-mni_09c.zip")
 conn.weights = conn.scaled_weights(mode="tract")
 
 cortical_rois = ['ctx-lh-bankssts', 'ctx-rh-bankssts', 'ctx-lh-caudalanteriorcingulate',
@@ -111,11 +113,8 @@ PETlabs = list(ADNI_AVG.columns[12:])
 PET_idx = [PETlabs.index(roi.lower()) for roi in list(conn.region_labels)]
 
 
-
 #     2.  DEFINE INITIAL CONDITIONS       ######################################
 
-# TODO - check structural matrix damage; tackle rebound (limiting TAUhp?);
-#  tackle stability of POWdam and thus AB42;
 
 """
                 A)   Alex Init  
@@ -139,7 +138,7 @@ ABt_initMap = [0.05 / len(AB_seeds) if roi in AB_seeds else 0 for roi in conn.re
 TAUt_initMap = [0.005 / len(TAU_seeds) if roi in TAU_seeds else 0 for roi in conn.region_labels]
 
 AB_initdam, TAU_initdam = [[0 for roi in conn.region_labels]] * 2
-HA_initdam = [0 for roi in conn.region_labels]
+HA_initdam = [1 for roi in conn.region_labels]
 
 
 #    3. PARAMETERS   and   SIMULATE      ########################################
@@ -149,8 +148,8 @@ bnm_simL, transient, bnm_dt = 10, 2, 1  # Units (seconds, seconds, years)
 
 circmodel = CircularADpgModel_vCC(
     conn, AB_initMap, TAU_initMap, ABt_initMap, TAUt_initMap, AB_initdam, TAU_initdam, HA_initdam,
-    TAU_dam2SC=5e-2, HA_damrate=5, maxTAU2SCdam=0.3,  # maxHAdam=1.25,  # origins @ ¿?, 0.01, 1.5
-    init_He=3.25, init_Cee=108, init_Cie=33.75,  # origins 3.25, 108, 33.75 || Initial values for NMM variable parameters
+    TAU_dam2SC=5e-2, maxTAU2SCdam=0.3, HA_damrate=0.01, maxHAdam=2,  # origins @ ¿?, 0.01, 1.5
+    init_He=3.25, init_Cep=108, init_Cip=33.75,  # origins 3.25, 108, 33.75 || Initial values for NMM variable parameters
     rho=50, toxicSynergy=0.4,  # origins 5, 2 || rho as a diffusion constant
     prodAB=3, clearAB=3, transAB2t=3, clearABt=2.4,
     prodTAU=3, clearTAU=3, transTAU2t=3, clearTAUt=2.55,
@@ -160,11 +159,11 @@ circmodel = CircularADpgModel_vCC(
 rHe = [0.35, 0.35]
 circmodel.init_He["range"] = [circmodel.init_He["value"][0] - rHe[0], circmodel.init_He["value"][0] + rHe[1]]
 
-rCee = [80, 40]  # origins (54, 160) :: (-54+x, x+54)
-circmodel.init_Cee["range"] = [circmodel.init_Cee["value"][0] - rCee[0], circmodel.init_Cee["value"][0] + rCee[1]]
+rCep = [80, 40]  # origins (54, 160) :: (-54+x, x+54)
+circmodel.init_Cep["range"] = [circmodel.init_Cep["value"][0] - rCep[0], circmodel.init_Cep["value"][0] + rCep[1]]
 
-rCie = [20.5, 10]  # origins (15, 50) :: (-16.75+x, x+16.25)
-circmodel.init_Cie["range"] = [circmodel.init_Cie["value"][0] - rCie[0], circmodel.init_Cie["value"][0] + rCie[1]]
+rCip = [20.5, 10]  # origins (15, 50) :: (-16.75+x, x+16.25)
+circmodel.init_Cip["range"] = [circmodel.init_Cip["value"][0] - rCip[0], circmodel.init_Cip["value"][0] + rCip[1]]
 
 
 # 3.3 Run

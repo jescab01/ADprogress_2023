@@ -60,14 +60,13 @@ else:
     from toolbox.littlebrains import addpial
 
 
-
 class CircularADpgModel_vCC:
     # Spread model variables following Alexandersen 2022.
     # M is an arbitrary unit of concentration
 
     def __init__(self, initConn, AB_initMap, TAU_initMAp, ABt_initMap, TAUt_initMap,
                  AB_initdam, TAU_initdam, HA_initdam,
-                 init_He, init_Cee, init_Cie, rho=0.001, toxicSynergy=2,
+                 init_He, init_Cep, init_Cip, rho=0.001, toxicSynergy=2,
                  prodAB=2, clearAB=2, transAB2t=2, clearABt=1.5,
                  prodTAU=2, clearTAU=2, transTAU2t=2, clearTAUt=2.66,
                  AB_damrate=1, TAU_damrate=1, TAU_dam2SC=0.2, HA_damrate=1, maxHAdam=2, maxTAU2SCdam=0.2,
@@ -139,11 +138,11 @@ class CircularADpgModel_vCC:
         init_He = init_He if type(init_He) == list else [init_He for roi in initConn.region_labels]
         self.init_He = {"label": "He", "value": init_He, "range": [2.6, 9.75],
                         "doc": "Initial state for excitatory PSP amplitud. def3.25"}
-        init_Cee = init_Cee if type(init_Cee) == list else [init_Cee for roi in initConn.region_labels]
-        self.init_Cee = {"label": "Cee", "value": init_Cee, "range": [54, 162],
+        init_Cep = init_Cep if type(init_Cep) == list else [init_Cep for roi in initConn.region_labels]
+        self.init_Cep = {"label": "Cep", "value": init_Cep, "range": [54, 162],
                         "doc": "Initial state for average synaptic contacts between exc interneurons and pyramidals. def108"}
-        init_Cie = init_Cie if type(init_Cie) == list else [init_Cie for roi in initConn.region_labels]
-        self.init_Cie = {"label": "Hi", "value": init_Cie, "range": [15, 50],
+        init_Cip = init_Cip if type(init_Cip) == list else [init_Cip for roi in initConn.region_labels]
+        self.init_Cip = {"label": "Cip", "value": init_Cip, "range": [15, 50],
                         "doc": "Initial state for average synaptic contacts between inh interneurons and pyramidals. def33.75"}
 
         self.cABexc = {"label": "c_beta", "value": np.array([cABexc]),
@@ -167,8 +166,8 @@ class CircularADpgModel_vCC:
                                       self.TAU_initdam["value"],
 
                                       self.init_He["value"],
-                                      self.init_Cee["value"],
-                                      self.init_Cie["value"],
+                                      self.init_Cep["value"],
+                                      self.init_Cip["value"],
 
                                       self.HA_initdam["value"]])
 
@@ -202,7 +201,7 @@ class CircularADpgModel_vCC:
         for t in np.arange(dt, time, dt):
 
             ## HyperActivity damage (attracting TAUt and generating more AB)
-            dActivity = np.average(ratePyr, axis=1) / baseline_activity  
+            dActivity = np.average(ratePyr, axis=1) / baseline_activity  # spectra[1] / baseline_power
 
             deriv = self.dfun(state_variables, self.Laplacian(weights), dActivity)
 
@@ -259,8 +258,8 @@ class CircularADpgModel_vCC:
         TAUdam = state_variables[5]
 
         He_ = state_variables[6]
-        Cee_ = state_variables[7]
-        Cie_ = state_variables[8]
+        Cep_ = state_variables[7]
+        Cip_ = state_variables[8]
 
         HAdam = state_variables[-1]
 
@@ -270,7 +269,7 @@ class CircularADpgModel_vCC:
 
         # Derivatives
         ###  Amyloid-beta
-        dAB = -rho_AB * np.sum(Lij * AB, axis=1) + self.prodAB["value"] * (1 + HAdam) - self.clearAB["value"] * AB - \
+        dAB = -rho_AB * np.sum(Lij * AB, axis=1) + self.prodAB["value"] * HAdam - self.clearAB["value"] * AB - \
               self.transAB2t["value"] * AB * ABt
         dABt = -rho_ABt * np.sum(Lij * ABt, axis=1) - self.clearABt["value"] * ABt + self.transAB2t[
             "value"] * AB * ABt
@@ -278,25 +277,25 @@ class CircularADpgModel_vCC:
         ###  (hyperphosphorilated) Tau
         dTAU = -rho_TAU * np.sum(Lij * TAU, axis=1) + self.prodTAU["value"] - self.clearTAU["value"] * TAU - \
                self.transTAU2t["value"] * TAU * TAUt - self.toxicSynergy["value"] * ABt * TAU * TAUt
-        dTAUt = -rho_TAUt * np.sum((Lij * (1 + HAdam)).transpose() * TAUt, axis=1) - self.clearTAUt["value"] * TAUt + \
+        dTAUt = -rho_TAUt * np.sum((Lij * HAdam).transpose() * TAUt, axis=1) - self.clearTAUt["value"] * TAUt + \
                 self.transTAU2t["value"] * TAU * TAUt + self.toxicSynergy["value"] * ABt * TAU * TAUt
 
         dABdam = self.AB_damrate["value"] * ABt * (1 - ABdam)
         dTAUdam = self.TAU_damrate["value"] * TAUt * (1 - TAUdam)
 
         ## Hyperactivity impact
-        dHAdam = self.HA_damrate["value"] * (dHA - 1)  * (1 - np.abs(HAdam))
+        dHAdam = self.HA_damrate["value"] * (-HAdam + dHA) * HAdam * (self.maxHAdam["value"] - HAdam)
 
         ## (He) PSP amplitude transfer - Impact on Glutamate reuptake
         dHe = self.cABexc["value"] * ABdam * (self.init_He["range"][1] - He_)
 
         ## INTRA-CONNECTIVITY transfers: a(exc), b(inh)
-        dCee = - self.cTAUexc["value"] * TAUdam * (Cee_ - self.init_Cee["range"][0])
+        dCep = - self.cTAUexc["value"] * TAUdam * (Cep_ - self.init_Cep["range"][0])
 
-        dCie = - self.cABinh["value"] * ABdam * (Cie_ - self.init_Cie["range"][0]) \
-               - self.cTAUinh["value"] * TAUdam * (Cie_ - self.init_Cie["range"][0])
+        dCip = - self.cABinh["value"] * ABdam * (Cip_ - self.init_Cip["range"][0]) \
+               - self.cTAUinh["value"] * TAUdam * (Cip_ - self.init_Cip["range"][0])
 
-        derivative = np.array([dAB, dABt, dTAU, dTAUt, dABdam, dTAUdam, dHe, dCee, dCie, dHAdam])
+        derivative = np.array([dAB, dABt, dTAU, dTAUt, dABdam, dTAUdam, dHe, dCep, dCip, dHAdam])
 
         return derivative
 
@@ -358,8 +357,8 @@ def simulate_v3(subj, conn, weights, g, s, sigma=0.022, sv=None, t=10, trans=1):
 
     # OTHER PARAMETERS   ###
     # integrator: dt=T(ms)=1000/samplingFreq(kHz)=1/samplingFreq(HZ)
-    # integrator = integrators.HeunStochastic(dt=1000/samplingFreq, noise=noise.Additive(nsig=np.array([5e-6])))
-    integrator = integrators.HeunDeterministic(dt=1000 / samplingFreq)
+    integrator = integrators.HeunStochastic(dt=1000/samplingFreq, noise=noise.Additive(nsig=np.array([0])))
+    # integrator = integrators.HeunDeterministic(dt=1000 / samplingFreq)
 
     mon = (monitors.Raw(),)
 
@@ -509,7 +508,7 @@ def circApproach(out_circ, conn, title, surrogates=None, folder="figures"):
         # Heatmaps
         xaxis1=dict(title="He"), xaxis3=dict(title="He"), xaxis2=dict(title="p (input)"),
         xaxis4=dict(title="p (input)"),
-        yaxis1=dict(title="Cie"), yaxis3=dict(title="Cie"), yaxis2=dict(title="Cee"), yaxis4=dict(title="Cee"),
+        yaxis1=dict(title="Cip"), yaxis3=dict(title="Cip"), yaxis2=dict(title="Cep"), yaxis4=dict(title="Cep"),
         coloraxis1=dict(colorbar_title="Hz", colorbar_x=0.42, colorbar_y=0.86, colorbar_len=0.28, colorbar_thickness=7, colorscale="Cividis"),
         coloraxis2=dict(colorbar_title="Hz", colorbar_x=0.94, colorbar_y=0.86, colorbar_len=0.28, colorbar_thickness=7),
 
@@ -1660,7 +1659,7 @@ def braidPlot(out_circ, conn, mode="surface", rho_vals=None, title="new", folder
         rxs_avg = np.asarray([np.average(np.asarray(rx), axis=0) for rx in rxs])
         # For each percentage; tell me in what time it was rebased.
 
-        rxs_perc = rxs_avg.transpose() / rxs_avg[:, -1] * 100
+        rxs_perc = rxs_avg.transpose() / rxs_avg[:, -1]
                                                         # (-)rxs_avg to sort in descending order
         # sortRx_TIME = [str(np.asarray(r_names)[np.argsort(-row)]) for row in rxs_perc]
 
@@ -2805,7 +2804,3 @@ def surrogatesFC(n, subj, conn, model, g, s, simLength, params=None, params_vCC=
                 pickle.dump(surrogates, f)
 
     return surrogates
-
-
-
-
