@@ -1,4 +1,4 @@
-Code use in the paper [Cabrera-Álvarez et al. (2023)](https://doi.org/10.1101/2023.09.24.559180) A multiscale closed-loop neurotoxicity model of Alzheimer’s disease progression explains functional connectivity alterations
+Code used in the paper [Cabrera-Álvarez et al. (2023)](https://doi.org/10.1101/2023.09.24.559180) A multiscale closed-loop neurotoxicity model of Alzheimer’s disease progression explains functional connectivity alterations
 
 
 
@@ -43,17 +43,19 @@ $$S\left[v\right]\ =\ \frac{2 \cdot e_{0}}{1 + e^{r(v_0-v)}}$$
 
 $$I_i(t) = \eta_i(t) + g\sum_{j=1}^{n} w_{ji} \ S[y_{1_j}(t - d_{ji}) - y_{2_j}(t - d_{ji})]$$
 
+$\eta_i$ is defined as a local and independent Gaussian noise \(\eta_i(t) \sim \mathcal{N}(p, \sigma)\).
+
 
 ## Proteinopathy
 Proteinopathy dynamics are described by the heterodimer model, one of the most common hypotheses that describe the prion-like spreading of toxic proteins. This hypothesis suggests that a healthy (properly folded) protein misfolds when it interacts with a toxic version of itself (misfolded; the prion/seed) following the latter's structure as a template [(Garzón et al. 2021)](10.1016/j.jtbi.2021.110797). Therefore, this model includes healthy and toxic versions of amyloid-beta ($A\beta$ / $A\beta_t$) and tau ($TAU$ / $TAU_t$) that are produced, cleared, transformed (from healthy to toxic), and propagated in the SC with N nodes. 
 
-$$\dot {A\beta_i} = -\rho \sum_{j=1}^{N}L_{ij} \cdot A\beta_j +  prod_{A\beta} \cdot (q_i^{(ha)}+1) - clear_{A\beta} \cdot A\beta_i - trans_{A\beta} \cdot A\beta_i \cdot A\beta t_i$$
+$$\dot {A\beta_i} = -\rho \sum_{j=1}^{N}L_{ij} \ A\beta_j +  prod_{A\beta} \ q_i^{(ha)} - clear_{A\beta} \ A\beta_i - trans_{A\beta} \ A\beta_i \ \tilde{A\beta_i}$$
 
-$$\dot {A\beta t_i} = -\rho \sum_{j=1}^{N}L_{ij} \cdot A\beta t_j - clear_{A\beta t} \cdot A\beta t_i + trans_{A\beta} \cdot A\beta_i \cdot A\beta t_i$$
+$$\dot {\tilde{A\beta_i}} = -\rho \sum_{j=1}^{N}L_{ij} \ \tilde{A\beta_j} - clear_{\tilde{A\beta}} \ \tilde{A\beta_i} + trans_{A\beta} \ A\beta_i \ \tilde{A\beta_i}$$
 
-$$\dot {TAU_i} = -\rho \sum_{j=1}^{N}L_{ij} \cdot TAU_j + prod_{T} - clear_{T} \cdot TAU_i - trans_{T} \cdot TAU_i \cdot TAUt_i - syn_{T} \cdot A\beta t \cdot TAU \cdot TAUt $$
+$$\dot {T_i} = -\rho \sum_{j=1}^{N}L_{ij} \ T_j + prod_{T} - clear_{T} \ T_i - trans_{T} \ T_i \ \tilde{T_i} - syn \ \tilde{A\beta_i} \ T_i \ \tilde{T_i}$$
 
-$$\dot {TAUt_{i}} = -\rho \sum_{j=1}^{N}L_{ij} \cdot TAUt_{j} \cdot (q_i^{(ha)}+1) - clear_{\tau_{t}} \cdot TAU_{t_i} + trans_{T} \cdot TAU_i \cdot TAUt_{i} + syn_{T} \cdot A\beta t \cdot TAU \cdot TAUt$$
+$$\dot {\tilde{T_i}} = -\rho \sum_{j=1}^{N}L_{ij} \ \tilde{T_j} \ q_i^{(ha)} - clear_{\tilde{T}} \ \tilde{T_i} + trans_{T} \ T_i \ \tilde{T_i} + syn \ \tilde{A\beta_i} \ T_i \ \tilde{T_i}$$
 
 Where:
 $$L_{ij}=-w_{ij}(t) + \delta_{ij} \sum_{j=1}^{N}{w_{ij}(t)}$$
@@ -65,20 +67,19 @@ $$L_{ij}=-w_{ij}(t) + \delta_{ij} \sum_{j=1}^{N}{w_{ij}(t)}$$
 ## Interactions
 The effect of toxic proteins on neural activity and vice-versa is mediated by three transfer functions (damage variables). These damage variables are used to update the values of the JR parameters. 
  
-$$\dot q_i^{(A\beta)} = A\beta t_{damrate} \cdot A\beta t_i (1-q_i^{(A\beta)})$$
+$$\dot q_i^{(\tilde{A\beta})} = c_q^{(\tilde{A\beta})} \ \tilde{A\beta}_i \ (1-q_i^{(\tilde{A\beta})})$$
 
-$$\dot q_i^{(T)} = TAUt_{damrate} \cdot TAUt_i (1-q_i^{(T)})$$
+$$\dot q_i^{(\tilde{T})} = c_q^{(\tilde{T})} \ \tilde{T}_i \ (1-q_i^{(\tilde{T})})$$
 
-The following interactions were considered: $A\beta$ disrupts the reuptake of glutamate rising excitation through the amplitude of the excitatory PSP ($H_e$); $A\beta$ reduced the number of inhibitory GABAergic synapses modeled through a reduction in $C_{ip}$ the average number of synapses between inhibitory neurons to pyramidal cells; hp-tau reduces the number of dendritic spines in pyramidal cells modeled through a reduction in $C_{ip}$, $C_{ep}$, and $w_{ij}$ (interregional weights).
+The following interactions were considered: $A\beta$ disrupts the reuptake of glutamate rising excitation through the amplitude of the excitatory PSP ($H_e$); $A\beta$ reduced the number of inhibitory GABAergic synapses modelled through a reduction in $C_{ip}$ the average number of synapses between inhibitory neurons to pyramidal cells; hp-tau reduces the number of dendritic spines in pyramidal cells modelled through a reduction in $C_{ip}$, $C_{ep}$, and $w_{ij}$ (interregional weights).
 
-$$\dot{H_{e_i}} = c_{A\beta_{exc}} q_i^{(A\beta)} (H_{e_{max}} - H_{e_i})$$
+$$\dot{H_{e_i}} = c_{exc}^{(\tilde{A\beta})} \ q_i^{(\tilde{A\beta})} \ (H_{e_{max}} - H_{e_i})$$
 
-$$\dot{C_{ip_i}} = -c_{A\beta_{inh}} q_i^{(A\beta)}(C_{ip_i} - C_{ip_{min}}) - c_{T_{inh}} q_i^{(T)} (C_{ip_i} - C_{ip_{min}})$$
+$$\dot{C_{ip_i}} = -c_{inh}^{(\tilde{A\beta})} \ q_i^{(\tilde{A\beta})} \ (C_{ip_i} - C_{ip_{min}}) - c_{inh}^{(\tilde{T})} \ q_i^{(\tilde{T})} \ (C_{ip_i} - C_{ip_{min}})$$
 
-$$\dot{C_{ep_i}} = -c_{T_{exc}}  q_i^{(T)}  (C_{ep_i} - C_{ep_{min}})$$
+$$\dot{C_{ep_i}} = -c_{exc}^{(\tilde{T})} \ q_i^{(\tilde{T})} \ (C_{ep_i} - C_{ep_{min}})$$
 
-
-$$\dot w_{ij} = -c_{T_{SC}} (q_i^{(T)} + q_j^{(T)}) (w_{ij} - w_{ij_{min}} )$$
+$$\dot w_{ij} = -c_{sc}^{\tilde{T}} \ (q_i^{(\tilde{T})} + q_j^{(\tilde{T})}) \ (w_{ij} - w_{ij_{min}})$$
 
 Where: 
 $$w_{ij_{min}} = w_{ij_0}  (1 - T_{SC_{max}})$$
@@ -86,7 +87,7 @@ $$w_{ij_{min}} = w_{ij_0}  (1 - T_{SC_{max}})$$
 
 Finally, we included the effect of hyperactivity on the enhanced production of $A\beta$ and the biased prion-like propagation of TAUt to hyperactive regions directly into proteinopathy equations. Note that the level of cellular activity was evaluated through the average firing rate of the pyramidal cells in a region, using the sigmoidal transformation of the inputs to pyramidal cells (i.e., $S[y_{1_i}(t) - y_{2_i}(t)]$ described for the JR model.
 
-$$\dot q_i^{(ha)} = ha_{damrate} \cdot (\Delta ha_i - 1) \cdot (1 - |q_i^{(ha)}|)$$
+$$\dot q_i^{(ha)} = c_{q}^{(ha)} \ (- q_i^{(ha)} + \Delta ha_i) \ (q_{max}^{(ha)} - q_i^{(ha)}) \ q_i^{(ha)}$$
 
 Where
 $$\Delta ha_i = ha_i(t) / ha_{i_{0}}$$
